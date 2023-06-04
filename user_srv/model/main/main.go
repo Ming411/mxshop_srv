@@ -11,28 +11,10 @@ import (
 	"log"
 	"mx_shop/user_srv/model"
 	"os"
-	"strings"
 	"time"
 )
 
-//func genMd5(code string) string {
-//	Md5 := md5.New()
-//	_, _ = io.WriteString(Md5, code)
-//	return hex.EncodeToString(Md5.Sum(nil))
-//}
-
 func main() {
-	// Using custom options
-	options := &password.Options{16, 100, 32, sha512.New}
-	salt, encodedPwd := password.Encode("generic password", options)
-	newPassword := fmt.Sprintf("$pbkdf2-sha512$%s$%s", salt, encodedPwd)
-	fmt.Println(newPassword)
-	passwordInfo := strings.Split(newPassword, "$")
-	fmt.Println(passwordInfo) // 从1开始
-	check := password.Verify("generic password", passwordInfo[2], passwordInfo[3], options)
-	//check := password.Verify("generic password", salt, encodedPwd, options)
-	fmt.Println(check) // true
-
 	dsn := "root:root@tcp(172.18.81.229:3306)/mxshop_user_srv?charset=utf8mb4&parseTime=True&loc=Local"
 	// 配置日志输出  可查看具体执行的SQL
 	newLogger := logger.New(
@@ -53,6 +35,23 @@ func main() {
 		panic("数据库连接失败")
 	}
 	// 根据定义的表结构建表
-	_ = db.AutoMigrate(&model.User{})
+	//_ = db.AutoMigrate(&model.User{})
 
+	/*生成测试数据*/
+	options := &password.Options{16, 100, 32, sha512.New}
+	salt, encodedPwd := password.Encode("admin123", options)
+	newPassword := fmt.Sprintf("$pbkdf2-sha512$%s$%s", salt, encodedPwd)
+	for i := 0; i < 10; i++ {
+		//user := model.User{
+		//	NickName: fmt.Sprintf("coder-%d", i),
+		//	Mobile:   fmt.Sprintf("1875563405%d", i),
+		//	Password: newPassword,
+		//}
+		//db.Save(&user)
+		db.Create(&model.User{
+			NickName: fmt.Sprintf("coder-%d", i),
+			Mobile:   fmt.Sprintf("1875563405%d", i),
+			Password: newPassword,
+		})
+	}
 }
