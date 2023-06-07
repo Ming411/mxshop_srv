@@ -17,17 +17,18 @@ import (
 	"context"
 	"crypto/sha512"
 	"fmt"
+	"mx_shop/user_srv/global"
+	"mx_shop/user_srv/model"
+	"mx_shop/user_srv/proto"
+	"strings"
+	"time"
+
 	"github.com/anaskhan96/go-password-encoder"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
-	"mx_shop/user_srv/global"
-	"mx_shop/user_srv/model"
-	"mx_shop/user_srv/proto"
-	"strings"
-	"time"
 )
 
 type UserServer struct {
@@ -81,7 +82,7 @@ func Paginate(page, pageSize int) func(db *gorm.DB) *gorm.DB {
 func (s *UserServer) GetUserList(ctx context.Context, req *proto.PageInfo) (*proto.UserListResponse, error) {
 	var users []model.User
 	result := global.DB.Find(&users)
-	if result != nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 	rsp := &proto.UserListResponse{} // 赋值地址
