@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
-	"mx_shop/user_srv/handler"
+	handle "mx_shop/user_srv/handler"
 	"mx_shop/user_srv/proto"
 	"net"
+
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 
 	// 开启 grpc 服务
 	server := grpc.NewServer()
-	proto.RegisterUserServer(server, &handler.UserServer{})
+	proto.RegisterUserServer(server, &handle.UserServer{})
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *IP, *Port))
 	if err != nil {

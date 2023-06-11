@@ -1,55 +1,73 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
-option go_package=".;proto";
 
 
-service User{
-  rpc GetUserList(PageInfo) returns (UserListResponse);// 用户列表
-  rpc GetUserByMobile(MobileRequest) returns (UserInfoResponse); // 通过mobile查询用户
-  rpc GetUserById(IdRequest) returns (UserInfoResponse); // 通过id查询用户
-  rpc CreateUser(CreateUserInfo) returns (UserInfoResponse); // 添加用户
-  rpc UpdateUser(UpdateUserInfo) returns (google.protobuf.Empty); // 更新用户
-  rpc CheckPassword(PasswordCheckInfo) returns (CheckResponse);// 检查密码
+option go_package = '.;proto';
+
+service User {
+    rpc getUserList(PageInfo) returns (UserListResponse); //用户列表
+    rpc getUserInfo(IdRequest) returns (UserInfoResponse); //通过id查找用户
+    rpc getUserMobile(MobileRequest) returns (UserInfoResponse); //通过手机查找用户
+    rpc createUser(CreateUserReq) returns (UserInfoResponse); //创建用户
+    rpc updateUser(UpdateUserReq) returns (Response);
+    rpc checkPassword(checkPasswordReq) returns (CheckPasswordResponse);
 }
 
-message PasswordCheckInfo{
-  string  password = 1;
-  string  encryptedPassword = 2; // 加密后的密码
+message  CheckPasswordResponse {
+    bool is_valid = 1;
 }
-message CheckResponse{
-  bool success = 1;
+
+message checkPasswordReq {
+    string password = 1;
+    string encryptedPassword = 2;
 }
-message PageInfo{
-  uint32 pn = 1; // 当前页
-  uint32 pSize = 2; // 每页大小
+
+message Response {
+    int32 code = 1;
+    string msg = 2;
 }
-message MobileRequest{
-  string mobile = 1;
+
+message UpdateUserReq {
+    int32 id = 1;
+    string password = 2;
+    string mobile = 3;
+    string nickName = 4;
+    uint64 birthDay = 5;
+    string gender = 6;
+    int32 role = 7;
 }
-message IdRequest{
-  int32  id = 1;
+
+message CreateUserReq {
+    string nickName = 1;
+    string password = 2;
+    string mobile = 3;
 }
-message CreateUserInfo{
-  string nickName = 1;
-  string password = 2;
-  string mobile = 3;
+
+message MobileRequest {
+    string mobile = 1;
 }
-message UpdateUserInfo{
-  int32 id = 1;
-  string nickName = 2;
-  string gender = 3;
-  uint64 birthday = 4;
+
+message  IdRequest {
+    int32 id = 1;
 }
-message UserInfoResponse{
-  int32 id =1;
-  string password = 2;
-  string  mobile = 3;
-  string nickName = 4;
-  uint64 birthday = 5;
-  string gender = 6 ;
-  int32 role = 7;
+
+message PageInfo {
+    uint32 page = 1;
+    uint32 size = 2;
+
 }
+
+message UserInfoResponse {
+    int32 id = 1;
+    string password = 2;
+    string mobile = 3;
+    string nickName = 4;
+    uint64 birthDay = 5;
+    string gender = 6;
+    int32 role = 7;
+
+}
+
 message UserListResponse{
-  int32 total = 1;
-  repeated UserInfoResponse data = 2; // repeated 表示有多个 数组
+    int32 total = 1;
+    repeated UserInfoResponse data = 2;
 }
