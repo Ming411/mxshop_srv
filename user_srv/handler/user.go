@@ -2,10 +2,13 @@ package handle
 
 import (
 	"context"
+	"crypto/sha512"
 	"mx_shop/user_srv/global"
 	"mx_shop/user_srv/model"
 	"mx_shop/user_srv/proto"
+	"strings"
 
+	"github.com/anaskhan96/go-password-encoder"
 	"github.com/jinzhu/copier"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -121,6 +124,17 @@ func (u *UserServer) UpdateUser(ctx context.Context, req *proto.UpdateUserReq) (
 	return &proto.Response{Code: 0, Msg: "修改成功"}, nil
 }
 
-func (u *UserServer) CheckPassword(ctx context.Context, req *proto.CheckPasswordReq) (*proto.CheckPasswordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckPassword not implemented")
+// func (u *UserServer) CheckPassword(ctx context.Context, req *proto.CheckPasswordReq) (*proto.CheckPasswordResponse, error) {
+// 	return nil, status.Errorf(codes.Unimplemented, "method CheckPassword not implemented")
+// }
+
+// CheckPassword 校验密码
+func (s *UserServer) CheckPassword(ctx context.Context, req *proto.CheckPasswordReq) (*proto.CheckPasswordResponse, error) {
+	options := &password.Options{16, 100, 32, sha512.New}
+	// 对加密后的密码进行解析  ？？？  为什么这里不是password
+	passwordInfo := strings.Split(req.EncryptedPassword, "$")
+	check := password.Verify(req.Password, passwordInfo[2], passwordInfo[3], options)
+	return &proto.CheckPasswordResponse{
+		IsValid: check,
+	}, nil
 }

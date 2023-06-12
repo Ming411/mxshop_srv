@@ -3,15 +3,16 @@ package main
 import (
 	"crypto/sha512"
 	"fmt"
+	"log"
+	"mx_shop/user_srv/model"
+	"os"
+	"time"
+
 	"github.com/anaskhan96/go-password-encoder"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"log"
-	"mx_shop/user_srv/model"
-	"os"
-	"time"
 )
 
 func main() {
@@ -41,17 +42,24 @@ func main() {
 	options := &password.Options{16, 100, 32, sha512.New}
 	salt, encodedPwd := password.Encode("admin123", options)
 	newPassword := fmt.Sprintf("$pbkdf2-sha512$%s$%s", salt, encodedPwd)
-	for i := 0; i < 10; i++ {
-		//user := model.User{
-		//	NickName: fmt.Sprintf("coder-%d", i),
-		//	Mobile:   fmt.Sprintf("1875563405%d", i),
-		//	Password: newPassword,
-		//}
-		//db.Save(&user)
-		db.Create(&model.User{
-			NickName: fmt.Sprintf("coder-%d", i),
-			Mobile:   fmt.Sprintf("1875563405%d", i),
-			Password: newPassword,
-		})
-	}
+
+	db.Create(&model.User{
+		NickName: "noCoder",
+		Mobile:   "18931411253",
+		Password: newPassword,
+	})
+
+	// for i := 0; i < 10; i++ {
+	// 	//user := model.User{
+	// 	//	NickName: fmt.Sprintf("coder-%d", i),
+	// 	//	Mobile:   fmt.Sprintf("1875563405%d", i),
+	// 	//	Password: newPassword,
+	// 	//}
+	// 	//db.Save(&user)
+	// 	db.Create(&model.User{
+	// 		NickName: fmt.Sprintf("coder-%d", i),
+	// 		Mobile:   fmt.Sprintf("1875563405%d", i),
+	// 		Password: newPassword,
+	// 	})
+	// }
 }
