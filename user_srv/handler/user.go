@@ -3,6 +3,7 @@ package handle
 import (
 	"context"
 	"crypto/sha512"
+	"fmt"
 	"mx_shop/user_srv/global"
 	"mx_shop/user_srv/model"
 	"mx_shop/user_srv/proto"
@@ -95,12 +96,16 @@ func (u *UserServer) CreateUser(ctx context.Context, req *proto.CreateUserReq) (
 
 	user.Mobile = req.Mobile
 	user.NickName = req.NickName
-	user.Password = req.Password
-
+	// 自定义 密码 加盐md5加密
+	options := &password.Options{16, 100, 32, sha512.New}
+	salt, encodedPwd := password.Encode(req.Password, options)
+	// 加盐操作
+	user.Password = fmt.Sprintf("$pbkdf2-sha512$%s$%s", salt, encodedPwd)
+	//fmt.Println(user.Password, "-------------------------")
 	result = global.DB.Create(&user)
-
 	if result.Error != nil {
-		return nil, status.Error(codes.Internal, result.Error.Error())
+		// codes.Internal 表示内部错误
+		return nil, status.Errorf(codes.Internal, result.Error.Error()) // Error() 自动转换错误类型
 	}
 	var userInfo proto.UserInfoResponse
 	copier.Copy(&userInfo, &user)
