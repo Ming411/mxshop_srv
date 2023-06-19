@@ -53,8 +53,8 @@ func main() {
 	err = client.Agent().ServiceRegister(&api.AgentServiceRegistration{
 		ID:      global.ServerConfig.Name,
 		Name:    global.ServerConfig.Name,
-		Address: "172.18.81.229", // consul 地址
-		Port:    *Port,           // 监听的服务的端口
+		Address: "172.25.16.1",
+		Port:    *Port, // 监听的服务的端口
 		Tags:    []string{"coder", "imooc"},
 		Check: &api.AgentServiceCheck{ // 健康检查
 			GRPC:                           "172.25.16.1:50051", // 监听的GPRC服务
