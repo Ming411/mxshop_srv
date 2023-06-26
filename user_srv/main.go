@@ -7,9 +7,14 @@ import (
 	handle "mx_shop/user_srv/handler"
 	"mx_shop/user_srv/initialize"
 	"mx_shop/user_srv/proto"
+	"mx_shop/user_srv/utils"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/hashicorp/consul/api"
+	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -17,16 +22,22 @@ import (
 )
 
 func main() {
-	IP := flag.String("ip", "0.0.0.0", "ip地址")
-	Port := flag.Int("port", 50051, "端口号")
+	// IP := flag.String("ip", "0.0.0.0", "ip地址")
+	IP := flag.String("ip", "172.29.32.1", "ip地址")
+	// Port := flag.Int("port", 50051, "端口号") // 本地测试使用固定一个端口
+	Port := flag.Int("port", 0, "端口号")
 	flag.Parse() // 解析用户输入
 
 	initialize.InitLogger() // 初始化日志
 	initialize.InitConfig() // 初始化端口等配置
 	initialize.InitDB()     // 初始化数据库
 
-	// 这里为什么是指针 ？？？
 	zap.S().Info("ip---", *IP)
+
+	if *Port == 0 {
+		*Port, _ = utils.GetFreePort()
+	}
+
 	zap.S().Info("port--", *Port)
 
 	// 开启 grpc 服务
@@ -50,25 +61,39 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	serviceID := uuid.NewV4().String() // 通过uuid生成唯一名称的服务，这样就可以同时启动多个服务
 	err = client.Agent().ServiceRegister(&api.AgentServiceRegistration{
-		ID:      global.ServerConfig.Name,
+		// ID:      global.ServerConfig.Name,
+		ID:      serviceID,
 		Name:    global.ServerConfig.Name,
-		Address: "172.25.16.1",
+		Address: "172.29.32.1",
 		Port:    *Port, // 监听的服务的端口
 		Tags:    []string{"coder", "imooc"},
 		Check: &api.AgentServiceCheck{ // 健康检查
-			GRPC:                           "172.25.16.1:50051", // 监听的GPRC服务
-			Timeout:                        "3s",                // 超时时间
-			Interval:                       "5s",                // 健康检查间隔
-			DeregisterCriticalServiceAfter: "30s",               // 注销时间，相当于过期时间
+			GRPC:                           fmt.Sprintf("%s:%d", "172.29.32.1", *Port), // 监听的GPRC服务
+			Timeout:                        "3s",                                       // 超时时间
+			Interval:                       "5s",                                       // 健康检查间隔
+			DeregisterCriticalServiceAfter: "30s",                                      // 注销时间，相当于过期时间
 		},
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	err = server.Serve(lis)
-	if err != nil {
-		panic("启动GRPC失败" + err.Error())
+	go func() {
+		err = server.Serve(lis) // 会造成阻塞,所以要以goruntine方式启动
+		if err != nil {
+			panic("启动GRPC失败" + err.Error())
+		}
+	}()
+
+	// 接收ctrl+c终止信号，用于清除之前注册的服务
+	quit := make(chan os.Signal) // chan 用于接收信号 os 用于获取系统信号
+	// syscall.SIGINT 表示中断信号（通常由 Ctrl+C 发出），syscall.SIGTERM 表示终止信号。
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit // 接收信号
+	if err = client.Agent().ServiceDeregister(serviceID); err != nil {
+		zap.S().Info("服务注销失败")
 	}
+	zap.S().Info("服务注销成功")
 }

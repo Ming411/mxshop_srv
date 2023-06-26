@@ -1,11 +1,20 @@
-name: 'user-srv'
-mysql:
-  host: '172.18.81.229'
-  port: 3306
-  user: 'root'
-  password: 'root'
-  name: 'mxshop_user_srv'
+# name: 'user-srv'
+# mysql:
+#   host: '172.18.81.229'
+#   port: 3306
+#   user: 'root'
+#   password: 'root'
+#   name: 'mxshop_user_srv'
 
-consul:
-  host: '172.18.81.229' # consul 地址
-  port: 8500
+# consul:
+#   host: '172.18.81.229' # consul 地址
+#   port: 8500
+
+# nacos: # 其他配置全部从nacos中获取
+host: "172.18.81.229"
+port: 8848
+namespace: "7463663a-bc7c-4004-a3ae-01a5f022ec9d"
+user: "nacos"
+password: "nacos"
+dataid: "user-srv.json"
+group: "dev"

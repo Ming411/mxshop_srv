@@ -9,6 +9,8 @@ import (
 var (
 	DB           *gorm.DB
 	ServerConfig config.ServerConfig // 服务配置
+	// nacos配置
+	NacosConfig config.NacosConfig
 )
 
 // 如果函数名为 init 那么当导入时 该函数自动执行
