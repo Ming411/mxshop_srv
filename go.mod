@@ -51,6 +51,7 @@ require (
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/goccy/go-json v0.10.2
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/consul/api v1.21.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
